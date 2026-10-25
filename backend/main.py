@@ -19,7 +19,6 @@ from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from pymongo import MongoClient
-import whisper
 import jiwer
 
 from audio_utils import convert_to_wav
@@ -68,6 +67,8 @@ whisper_model = None
 def get_whisper_model():
     global whisper_model
     if whisper_model is None:
+        import whisper
+
         logger.info("Loading Whisper 'base' model...")
         whisper_model = whisper.load_model("base")
         logger.info("Whisper model loaded successfully.")

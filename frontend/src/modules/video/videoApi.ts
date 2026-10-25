@@ -1,6 +1,7 @@
 import type { VideoJobResponse, VideoSessionDetail } from './types';
+import { apiUrl } from '../../api';
 
-const BASE_URL = (import.meta.env.VITE_VIDEO_API_URL || 'http://127.0.0.1:8000/video').replace(/\/$/, '');
+const BASE_URL = (import.meta.env.VITE_VIDEO_API_URL || apiUrl('/video')).replace(/\/$/, '');
 
 function getAuthHeaders(): HeadersInit {
   const token = localStorage.getItem('speechai_token');

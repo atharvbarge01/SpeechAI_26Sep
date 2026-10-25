@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Mic, Square, Play, CheckCircle, AlertCircle, Sparkles, BookOpen, BarChart3, HelpCircle, Activity, Flame, History, AlertTriangle, LogIn, LogOut, UserPlus, X, Search, RefreshCw, LayoutDashboard, Compass, Volume2, Video as VideoIcon, TrendingUp, TrendingDown, Award, Target, ShieldCheck, Layers, Gauge, Trash2, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
+import { Mic, Square, Play, CheckCircle, AlertCircle, Sparkles, BarChart3, HelpCircle, Activity, Flame, History, AlertTriangle, LogIn, LogOut, UserPlus, X, Search, RefreshCw, LayoutDashboard, Compass, Volume2, Video as VideoIcon, TrendingUp, TrendingDown, Award, Target, ShieldCheck, Layers, Gauge, Trash2, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { LineChart, Line, AreaChart, Area, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ReferenceArea, ReferenceLine } from 'recharts';
 import './App.css';
@@ -12,6 +12,7 @@ import { EmotionBreakdown } from './modules/video/components/EmotionBreakdown';
 import { FeedbackList } from './modules/video/components/FeedbackList';
 import { PronunciationHighlight } from './modules/video/components/PronunciationHighlight';
 import { deleteVideoSession } from './modules/video/videoApi';
+import { apiUrl } from './api';
 import type { ScoresBreakdown, SpeechFeatures } from './modules/video/types';
 
 // Type definitions
@@ -627,7 +628,7 @@ function App() {
     }
 
     try {
-      const res = await fetch(`http://127.0.0.1:8000/reports/${userId}`, { headers });
+      const res = await fetch(apiUrl(`/reports/${userId}`), { headers });
       if (res.ok) {
         const data = await res.json();
         setStreakCount(data.streak_count);
@@ -663,7 +664,7 @@ function App() {
 
   const fetchExercises = async () => {
     try {
-      const res = await fetch('http://127.0.0.1:8000/exercises');
+      const res = await fetch(apiUrl('/exercises'));
       if (res.ok) {
         const data = await res.json();
         setExercisesList(data);
@@ -676,7 +677,7 @@ function App() {
   const handleGenerateText = async () => {
     setIsGenerating(true);
     try {
-      const url = `http://127.0.0.1:8000/practice/generate?topic=${encodeURIComponent(aiTopic)}&length=${aiLength}&level=${aiEnglishLevel}&exercise_id=${aiFocusExercise}`;
+      const url = apiUrl(`/practice/generate?topic=${encodeURIComponent(aiTopic)}&length=${aiLength}&level=${aiEnglishLevel}&exercise_id=${aiFocusExercise}`);
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
@@ -697,7 +698,7 @@ function App() {
   const handleGenerateExerciseText = async (exerciseId: string) => {
     setIsGenerating(true);
     try {
-      const url = `http://127.0.0.1:8000/practice/generate?topic=${encodeURIComponent(aiTopic)}&length=${aiLength}&exercise_id=${exerciseId}`;
+      const url = apiUrl(`/practice/generate?topic=${encodeURIComponent(aiTopic)}&length=${aiLength}&exercise_id=${exerciseId}`);
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
@@ -720,9 +721,7 @@ function App() {
     e.preventDefault();
     setAuthError(null);
 
-    const url = authMode === 'login' 
-      ? 'http://127.0.0.1:8000/auth/login' 
-      : 'http://127.0.0.1:8000/auth/register';
+    const url = apiUrl(authMode === 'login' ? '/auth/login' : '/auth/register');
       
     const payload = authMode === 'login'
       ? { email: authEmail, password: authPassword }
@@ -847,7 +846,7 @@ function App() {
     const formData = new FormData();
     formData.append('audio', blob, 'recording.webm');
     
-    const url = 'http://127.0.0.1:8000/analyze/speech';
+    const url = apiUrl('/analyze/speech');
     const text = activeTab === 'exercises' ? exerciseTargetText : fluencyTargetText;
     if (text) {
       formData.append('target_sentence', text);
@@ -1059,7 +1058,7 @@ function App() {
     if (thisRequestId !== activeAudioRequestIdRef.current) return;
 
     try {
-      const url = `http://127.0.0.1:8000/tts/generate?text=${encodeURIComponent(normalizedText)}`;
+      const url = apiUrl(`/tts/generate?text=${encodeURIComponent(normalizedText)}`);
       const res = await fetch(url, { signal: abortController.signal });
 
       if (thisRequestId !== activeAudioRequestIdRef.current) {

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { MessageSquare, Clock, Sparkles, RefreshCw, ArrowRight } from 'lucide-react';
+import { apiUrl } from '../../../api';
 
 interface ModuleConfigPanelProps {
   onStartSession: (config: {
@@ -31,7 +32,7 @@ export const ModuleConfigPanel: React.FC<ModuleConfigPanelProps> = ({ onStartSes
     setIsGenerating(true);
     setGeneratedText(null);
     try {
-      const url = `http://127.0.0.1:8000/practice/generate?topic=${encodeURIComponent(topicParam)}&length=${aiLength}&level=${aiEnglishLevel}&exercise_id=none`;
+      const url = apiUrl(`/practice/generate?topic=${encodeURIComponent(topicParam)}&length=${aiLength}&level=${aiEnglishLevel}&exercise_id=none`);
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();

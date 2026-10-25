@@ -30,3 +30,7 @@ If you are developing a production application, we recommend enabling type-aware
 ```
 
 See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+
+## Backend API URL
+
+During local development, the frontend defaults to the backend at `http://127.0.0.1:8000`. For deployment, set `VITE_API_BASE_URL` to the backend's public origin (for example, `https://api.example.com`) in the frontend hosting provider's build environment, then rebuild and redeploy the frontend. Leave it unset when both are served from the same origin. Do not include a trailing slash.

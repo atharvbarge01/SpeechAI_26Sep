@@ -1,16 +1,20 @@
 import subprocess
 import os
 import logging
-import static_ffmpeg
+import importlib
 
 logger = logging.getLogger(__name__)
 
-# Initialize static-ffmpeg to add ffmpeg/ffprobe to PATH
+# Dynamically initialize static-ffmpeg if available without IDE unresolved import errors
 try:
-    static_ffmpeg.add_paths()
-    logger.info("static-ffmpeg initialized and added to PATH.")
+    static_ffmpeg = importlib.import_module("static_ffmpeg")
+    if hasattr(static_ffmpeg, "add_paths"):
+        static_ffmpeg.add_paths()
+        logger.info("static-ffmpeg initialized and added to PATH.")
+except (ImportError, ModuleNotFoundError):
+    logger.info("static_ffmpeg not present in active environment; relying on system ffmpeg.")
 except Exception as e:
-    logger.error(f"Failed to initialize static-ffmpeg: {e}")
+    logger.warning(f"Notice: static-ffmpeg initialization skipped: {e}")
 
 def convert_to_wav(input_path: str, output_path: str) -> bool:
     """

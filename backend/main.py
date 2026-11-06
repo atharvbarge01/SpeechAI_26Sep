@@ -27,6 +27,18 @@ from fastapi.responses import StreamingResponse, Response
 import wave
 import numpy as np
 
+# In-House 6-Parameter Speech Scoring Model Integration
+try:
+    from ml_model.service import evaluate_speech_with_inhouse_model, is_local_model_available
+except ImportError:
+    try:
+        from speech_scoring_model.service import evaluate_speech_with_inhouse_model, is_local_model_available
+    except ImportError:
+        def is_local_model_available():
+            return False
+        async def evaluate_speech_with_inhouse_model(*args, **kwargs):
+            return None, "model_not_found", None
+
 # Logging Setup
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("SpeechAI_Backend")
@@ -801,12 +813,26 @@ async def evaluate_results_with_gemini(
     stammer_events: int,
     long_pauses: int,
     target_sentence: Optional[str] = None,
-    wer: Optional[float] = None
+    wer: Optional[float] = None,
+    wav_path: Optional[str] = None
 ) -> tuple[Optional[str], Optional[str]]:
     """
-    Uses Gemini API Key to evaluate speech session results and provide small and concise suggestions.
-    Falls back gracefully to Groq or rule-based suggestions if Gemini is unavailable.
+    Evaluates speech session results and provides small and concise suggestions.
+    Prioritizes the In-House Trained 6-Parameter Model, falling back to Google Gemini, Groq, or rule-based suggestions.
     """
+    # 0. Primary: In-House Trained Speech Scorer Model (if trained checkpoint is available)
+    if wav_path and is_local_model_available():
+        logger.info("Evaluating speech results using In-House Trained 6-Parameter Model...")
+        fb_text, src, _ = await evaluate_speech_with_inhouse_model(
+            audio_path=wav_path,
+            transcript=transcript,
+            target_sentence=target_sentence,
+            wer=wer
+        )
+        if fb_text:
+            logger.info("Successfully evaluated speech using In-House Model.")
+            return fb_text, src
+
     gemini_key = os.getenv("GEMINI_API_KEY")
     groq_key = os.getenv("GROQ_API_KEY")
 
@@ -1641,7 +1667,7 @@ async def analyze_speech(
             feedback.append("Excellent fluency! Your pace, pause usage, and articulation are in the optimal range.")
             recommended_exercises.append("advanced_impromptu_speaking")
 
-        # Gemini Evaluation: Small, concise evaluation and actionable suggestions
+        # Evaluation: In-House Trained Model -> Google Gemini API -> Groq / Rule-based fallback
         ai_pathologist_feedback, source_name = await evaluate_results_with_gemini(
             transcript=transcript,
             wpm=wpm,
@@ -1650,7 +1676,8 @@ async def analyze_speech(
             stammer_events=stammer_events,
             long_pauses=long_pauses,
             target_sentence=target_sentence,
-            wer=wer_val
+            wer=wer_val,
+            wav_path=temp_wav_path
         )
 
         streak_count = update_user_streak(user_id)

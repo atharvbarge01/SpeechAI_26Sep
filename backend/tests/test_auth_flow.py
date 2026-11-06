@@ -1,5 +1,10 @@
-import requests
+import os
+import sys
 import uuid
+import requests
+
+# Ensure backend root is in sys.path
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 def test_password_hashing():
     print("Testing password hashing PBKDF2 helpers...")
@@ -31,7 +36,9 @@ def test_tokens():
 
 def test_endpoints():
     print("\nTesting registration & login endpoints...")
-    base_url = "http://127.0.0.1:8000"
+    from main import app
+    from fastapi.testclient import TestClient
+    client = TestClient(app)
     
     # Generate unique emails
     test_id = str(uuid.uuid4())[:8]
@@ -40,21 +47,19 @@ def test_endpoints():
     password = "SuperSecretPassword"
     
     # 1. Register User
-    reg_url = f"{base_url}/auth/register"
     reg_payload = {"name": name, "email": email, "password": password}
-    response = requests.post(reg_url, json=reg_payload)
+    response = client.post("/auth/register", json=reg_payload)
     print("Register Response:", response.status_code, response.json())
     assert response.status_code == 200, "Registration should succeed"
 
     # 2. Register Duplicate Email (should fail)
-    response_dup = requests.post(reg_url, json=reg_payload)
+    response_dup = client.post("/auth/register", json=reg_payload)
     print("Register Duplicate Response:", response_dup.status_code)
     assert response_dup.status_code == 400, "Duplicate registration should fail with 400"
 
     # 3. Login with Correct Password
-    login_url = f"{base_url}/auth/login"
     login_payload = {"email": email, "password": password}
-    response_login = requests.post(login_url, json=login_payload)
+    response_login = client.post("/auth/login", json=login_payload)
     print("Login Correct Response:", response_login.status_code)
     assert response_login.status_code == 200, "Login should succeed"
     login_data = response_login.json()
@@ -62,7 +67,7 @@ def test_endpoints():
     
     # 4. Login with Incorrect Password
     login_bad_payload = {"email": email, "password": "WrongPassword"}
-    response_bad_login = requests.post(login_url, json=login_bad_payload)
+    response_bad_login = client.post("/auth/login", json=login_bad_payload)
     print("Login Bad Response:", response_bad_login.status_code)
     assert response_bad_login.status_code == 400, "Login with wrong password should fail with 400"
 

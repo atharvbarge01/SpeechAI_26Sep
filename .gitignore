@@ -25,3 +25,16 @@ temp_media/
 .gemini/
 .agents/
 *.log
+
+# Large datasets, raw audio, and model checkpoints
+dataset/
+checkpoints/
+*.pt
+*.pth
+*.onnx
+*.bin
+*.wav
+*.mp3
+*.flac
+*.zip
+*.tar.gz

@@ -11,7 +11,7 @@ import pandas as pd
 import soundfile as sf
 import librosa
 from torch.utils.data import Dataset
-from typing import List, Dict, Optional, Tuple, Union
+from typing import Any, List, Dict, Optional, Tuple, Union
 
 from speech_scoring_model.config import ScorerConfig
 
@@ -142,6 +142,8 @@ class SpeechScoringDataset(Dataset):
                 
         # Read audio
         waveform, sr = librosa.load(full_path, sr=self.config.sample_rate, mono=True)
+        if len(waveform) == 0:
+            raise ValueError(f"Audio file contains no samples: {full_path}")
         
         # Truncate if longer than max audio length
         max_samples = int(self.config.max_audio_length_seconds * self.config.sample_rate)
@@ -206,4 +208,3 @@ def collate_speech_batch(batch: List[Dict[str, Any]]) -> Dict[str, torch.Tensor]
         "raw_targets": raw_targets,
         "audio_paths": audio_paths
     }
-

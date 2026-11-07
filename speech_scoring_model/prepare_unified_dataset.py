@@ -21,6 +21,7 @@ import glob
 import argparse
 import pandas as pd
 import numpy as np
+import soundfile as sf
 
 def process_archive_8(archive_dir: str) -> list[dict]:
     """Processes UCLASS dataset (archive 8)."""
@@ -250,6 +251,23 @@ def build_unified_dataset(dataset_dir: str, output_csv: str = "metadata.csv", ba
         print("Error: No records found across archive folders!")
         return
         
+    valid_records = []
+    skipped_empty_audio = 0
+    for record in all_records:
+        audio_path = os.path.join(dataset_dir, record["audio_path"])
+        if sf.info(audio_path).frames == 0:
+            skipped_empty_audio += 1
+            continue
+        valid_records.append(record)
+
+    if skipped_empty_audio:
+        print(f"Skipped {skipped_empty_audio} records with empty audio files.")
+
+    all_records = valid_records
+    if not all_records:
+        print("Error: No records with non-empty audio found across archive folders!")
+        return
+
     df = pd.DataFrame(all_records)
     print("\n" + "="*60)
     print(f" UNIFIED DATASET SUMMARY: {len(df)} TOTAL SAMPLES")
@@ -279,4 +297,3 @@ if __name__ == "__main__":
         output_csv=args.output_file,
         balance_samples=args.max_samples
     )
-

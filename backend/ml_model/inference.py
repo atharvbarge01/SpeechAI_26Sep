@@ -30,7 +30,18 @@ class SpeechScorerInference:
         
         if not os.path.exists(checkpoint_path):
             raise FileNotFoundError(f"Checkpoint not found at: {checkpoint_path}")
-        checkpoint = torch.load(checkpoint_path, map_location=self.device)
+        
+        # Ensure module path alias for unpickling compatibility
+        if "speech_scoring_model" not in sys.modules:
+            import ml_model
+            import ml_model.config
+            sys.modules["speech_scoring_model"] = ml_model
+            sys.modules["speech_scoring_model.config"] = ml_model.config
+
+        try:
+            checkpoint = torch.load(checkpoint_path, map_location=self.device, weights_only=False)
+        except TypeError:
+            checkpoint = torch.load(checkpoint_path, map_location=self.device)
         
         self.config = checkpoint.get("config", ScorerConfig())
         self.model = Wav2Vec2SpeechScorer(self.config)

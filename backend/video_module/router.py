@@ -2,7 +2,7 @@ import os
 import uuid
 import asyncio
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, List
 
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Header, BackgroundTasks, status
@@ -44,7 +44,7 @@ def video_health():
     return {
         "status": "healthy",
         "service": "SpeechAI Module 2 (Video + Audio Communication Analysis)",
-        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "database_available": _db is not None
     }
 
@@ -89,7 +89,7 @@ async def submit_video_analysis(
             os.remove(temp_video_path)
         raise HTTPException(status_code=500, detail="Failed to receive video stream on server.")
 
-    created_at = datetime.utcnow().isoformat() + "Z"
+    created_at = datetime.now(timezone.utc).isoformat()
     initial_job_data = {
         "job_id": job_id,
         "user_id": user_id,

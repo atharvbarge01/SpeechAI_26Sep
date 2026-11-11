@@ -11,6 +11,9 @@ from datetime import datetime, timezone
 from typing import List, Dict, Any, Optional
 from dotenv import load_dotenv
 
+def utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
 # Load environment variables from backend/.env or root .env
 load_dotenv()
 load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
@@ -137,7 +140,7 @@ def verify_password(password: str, stored_password: str) -> bool:
         return False
 
 def generate_token(user_id: str) -> str:
-    timestamp = str(int(datetime.utcnow().timestamp()))
+    timestamp = str(int(utc_now().timestamp()))
     message = f"{user_id}:{timestamp}"
     sig = hmac.new(SECRET_KEY.encode('utf-8'), message.encode('utf-8'), hashlib.sha256).hexdigest()
     return f"{user_id}:{timestamp}:{sig}"
@@ -150,7 +153,7 @@ def verify_token(token: str) -> Optional[str]:
         user_id, timestamp, sig = parts[0], parts[1], parts[2]
         
         token_time = float(timestamp)
-        current_time = datetime.utcnow().timestamp()
+        current_time = utc_now().timestamp()
         # Token valid for 7 days
         if current_time - token_time > 7 * 86400:
             return None
@@ -597,7 +600,7 @@ def seed_default_user():
             "email": "anonymous@speechai.com",
             "streak_count": 0,
             "last_practice_date": None,
-            "created_at": datetime.utcnow()
+            "created_at": utc_now()
         })
         logger.info("Default anonymous user initialized.")
 
@@ -613,12 +616,12 @@ def update_user_streak(user_id: str) -> int:
             "name": "Registered User",
             "email": f"{user_id}@speechai.com",
             "streak_count": 1,
-            "last_practice_date": datetime.utcnow().strftime("%Y-%m-%d"),
-            "created_at": datetime.utcnow()
+            "last_practice_date": utc_now().strftime("%Y-%m-%d"),
+            "created_at": utc_now()
         })
         return 1
 
-    current_date_str = datetime.utcnow().strftime("%Y-%m-%d")
+    current_date_str = utc_now().strftime("%Y-%m-%d")
     last_practice_str = user.get("last_practice_date")
     streak_count = user.get("streak_count", 0)
 
@@ -681,7 +684,7 @@ def register_user(req: RegisterRequest):
             "password_hash": hashed_pwd,
             "streak_count": 0,
             "last_practice_date": None,
-            "created_at": datetime.utcnow()
+            "created_at": utc_now()
         })
         logger.info(f"User '{req.email}' successfully registered.")
         return {"status": "success", "message": "User registered successfully"}
@@ -724,7 +727,7 @@ def read_root():
     return {
         "status": "healthy",
         "service": "SpeechAI API",
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": utc_now().isoformat(),
         "database_connected": db is not None
     }
 
@@ -1720,7 +1723,7 @@ async def analyze_speech(
                     **response_data,
                     "user_id": user_id,
                     "session_category": "exercise" if exercise_id else "analysis",
-                    "created_at": datetime.utcnow()
+                    "created_at": utc_now()
                 })
                 logger.info(f"Speech analysis session '{session_id}' persisted to DB.")
             except Exception as e:

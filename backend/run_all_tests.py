@@ -36,7 +36,8 @@ def main():
         "test_groq_generation.py",
         "test_pronunciation_alignment.py",
         "test_speech_pathology_analysis.py",
-        "test_feedback_evaluation.py"
+        "test_feedback_evaluation.py",
+        "test_inhouse_ml_model.py"
     ]
     
     failed = False

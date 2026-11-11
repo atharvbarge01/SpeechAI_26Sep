@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pymongo import MongoClient
 import os
 
@@ -32,7 +32,7 @@ def test_streaks():
 
     # 4. Case C: Practice on consecutive days
     # Mock last practice as yesterday
-    yesterday = (datetime.utcnow() - timedelta(days=1)).strftime("%Y-%m-%d")
+    yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y-%m-%d")
     users_collection.update_one(
         {"_id": test_user},
         {"$set": {"last_practice_date": yesterday, "streak_count": 1}}
@@ -43,7 +43,7 @@ def test_streaks():
 
     # 5. Case D: Practice after missing a day
     # Mock last practice as 3 days ago
-    three_days_ago = (datetime.utcnow() - timedelta(days=3)).strftime("%Y-%m-%d")
+    three_days_ago = (datetime.now(timezone.utc) - timedelta(days=3)).strftime("%Y-%m-%d")
     users_collection.update_one(
         {"_id": test_user},
         {"$set": {"last_practice_date": three_days_ago, "streak_count": 2}}

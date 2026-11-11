@@ -2,7 +2,7 @@ import os
 import shutil
 import logging
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, Any, Optional
 import cv2
 import httpx
@@ -191,8 +191,8 @@ async def process_video_job(
             "user_id": user_id,
             "status": "COMPLETED",
             "stage": "done",
-            "created_at": datetime.utcnow().isoformat() + "Z",
-            "completed_at": datetime.utcnow().isoformat() + "Z",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "completed_at": datetime.now(timezone.utc).isoformat(),
             "task_type": task_type,
             "prompt_text": prompt_text,
             "duration_sec": duration_sec,
@@ -227,7 +227,7 @@ async def process_video_job(
             try:
                 db_collection.update_one(
                     {"_id": job_id},
-                    {"$set": {"status": "FAILED", "error": str(e), "completed_at": datetime.utcnow().isoformat() + "Z"}}
+                    {"$set": {"status": "FAILED", "error": str(e), "completed_at": datetime.now(timezone.utc).isoformat()}}
                 )
             except Exception:
                 pass

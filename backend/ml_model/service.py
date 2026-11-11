@@ -87,7 +87,7 @@ async def evaluate_speech_with_inhouse_model(
         feedback_lines = results["feedback"]
         feedback_str = (
             f"Assessment: Composite fluency score is {results['composite_fluency_score']}/10. "
-            "Actionable Suggestions:\n" + "\n".join(f"• {tip}" for tip in feedback_lines[:3])
+            "Actionable Suggestions:\n" + "\n".join(f"- {tip}" for tip in feedback_lines[:3])
         )
         
         return feedback_str, "In-House Speech Scorer", params
